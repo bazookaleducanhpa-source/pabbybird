@@ -1,4 +1,4 @@
-import { _decorator, Canvas, Component, director, Node, UITransform, Vec3 } from 'cc';
+import { _decorator, Component, Node, UITransform, Vec3 } from 'cc';
 const { ccclass, property } = _decorator;
 import {GameControll} from './GameControll';
 @ccclass('Ground')
@@ -59,18 +59,25 @@ export class Ground extends Component {
         this.tempStartLocation2.x -= this.gameSpeed * deltaTime;
         this.tempStartLocation3.x -= this.gameSpeed * deltaTime; 
 
-        const scene = director.getScene();
-        const canvas = scene.getComponentInChildren(Canvas);
-        
-        if(this.tempStartLocation1.x <= (0 - this.groundWidth1)){
-            this.tempStartLocation1.x = canvas.getComponent(UITransform).width;
+        // UITransform anchor X is 1, so x is the segment's right edge.
+        // Recycle each segment directly after the rightmost remaining segment.
+        const segments = [
+            { position: this.tempStartLocation1, width: this.groundWidth1 },
+            { position: this.tempStartLocation2, width: this.groundWidth2 },
+            { position: this.tempStartLocation3, width: this.groundWidth3 },
+        ].sort((a, b) => a.position.x - b.position.x);
+
+        for (const segment of segments) {
+            while (segment.position.x <= -segment.width) {
+                const rightmostX = Math.max(
+                    ...segments
+                        .filter(other => other !== segment)
+                        .map(other => other.position.x),
+                );
+                segment.position.x = rightmostX + segment.width;
+            }
         }
-        if(this.tempStartLocation2.x <= (0 - this.groundWidth2)){
-            this.tempStartLocation2.x = canvas.getComponent(UITransform).width;
-        }
-        if(this.tempStartLocation3.x <= (0 - this.groundWidth3)){
-            this.tempStartLocation3.x = canvas.getComponent(UITransform).width;
-        }
+
         this.ground1.setPosition(this.tempStartLocation1);
         this.ground2.setPosition(this.tempStartLocation2);
         this.ground3.setPosition(this.tempStartLocation3);
