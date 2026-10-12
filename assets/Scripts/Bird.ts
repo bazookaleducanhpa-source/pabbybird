@@ -14,7 +14,7 @@ export class Bird extends Component {
         tooltip: "Jump duration is here"
     })
     public jumpDuration: number = 3.5;
-
+    public hitSomething: boolean = false;
     public birdAnimation: Animation;
     public birdLocation: Vec3;
 
@@ -26,6 +26,7 @@ export class Bird extends Component {
     resetBird() {
         this.birdLocation = new Vec3(0, 0, 0);
         this.node.setPosition(this.birdLocation);
+        this.hitSomething = false;
     }
     fly(){
         this.birdAnimation.stop();
